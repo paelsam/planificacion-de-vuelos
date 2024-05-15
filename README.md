@@ -1,6 +1,12 @@
 ## El problema de la Planificación de vuelos
 
-### Usage
+### Cómo compilar y ejecutar el proyecto
+
+Primero, clona el repositorio:
+
+```bash
+git clone https://github.com/paelsam/planificacion-de-vuelos
+```
 
 Puedes usar el editor que quieras, pero si quieres usar el editor de Visual Studio Code, puedes instalar la extensión de Metals para Scala 3. Para ello, sigue los siguientes pasos:
 
@@ -10,6 +16,8 @@ Puedes usar el editor que quieras, pero si quieres usar el editor de Visual Stud
 4. Entra al icono de Metals en la barra lateral izquierda y selecciona "Import build".
 5. Espera a que se descarguen las dependencias y se compile el proyecto.
 
+
+Versión de Scala Utilizada: *3.3.3*
 
 
 
