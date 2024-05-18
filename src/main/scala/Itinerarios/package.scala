@@ -1,25 +1,7 @@
 import Datos.Vuelo
 import Datos.Aeropuerto
 import Datos.Itinerario
-import Datos.aeropuertos
 
-/*
-  case class Aeropuerto(Cod: String, X: Int, Y: Int, GMT: Int)
-
-  case class Vuelo(
-      Aln: String,
-      Num: Int,
-      Org: String,
-      HS: Int,
-      MS: Int,
-      Dst: String,
-      HL: Int,
-      ML: Int,
-      Esc: Int
-  )
-
-  type Itinerario = List[Vuelo]
- */
 
 package object Itinerarios {
 
@@ -51,12 +33,17 @@ package object Itinerarios {
     })
   }
 
-  def obtenerTiempoEspera(aeropuertos: List[Aeropuerto], itinerario: Itinerario, acc: Int): Int = {
+  def obtenerTiempoEspera(
+      aeropuertos: List[Aeropuerto],
+      itinerario: Itinerario,
+      acc: Int
+  ): Int = {
     itinerario match {
       case Nil          => acc
       case vuelo :: Nil => acc
       case vuelo1 :: vuelo2 :: tail => {
-        // Del vuelo1 obtener la hora de llegada en GMT (Se supone que el GMT del vuelo2 es el msimo para el Org)
+        // Del vuelo1 obtener la hora de llegada en GMT
+        // (Se supone que el GMT del vuelo2 es el mismo para el Org)
         val HLv1GMT =
           if (vuelo1.HL - obtenerGMT(aeropuertos, vuelo1.Dst) < 0)
             (vuelo1.HL - obtenerGMT(aeropuertos, vuelo1.Dst) + 24)
@@ -67,9 +54,12 @@ package object Itinerarios {
             (vuelo2.HS - obtenerGMT(aeropuertos, vuelo2.Org) + 24)
           else (vuelo2.HS - obtenerGMT(aeropuertos, vuelo2.Org))
 
-        obtenerTiempoEspera(aeropuertos,
+        obtenerTiempoEspera(
+          aeropuertos,
           vuelo2 :: tail,
-          acc + math.abs((HSv2GMT * 60 + vuelo2.MS) - (HLv1GMT * 60 + vuelo1.MS))
+          acc + math.abs(
+            (HSv2GMT * 60 + vuelo2.MS) - (HLv1GMT * 60 + vuelo1.ML)
+          )
         )
       }
     }
@@ -190,21 +180,7 @@ package object Itinerarios {
 
     (a: String, b: String, h: Int, m: Int) =>
       {
-
-        println(itinerarios(vuelos, aeropuertos)(a, b))
-
-        // Calcular todos los tiempos de vuelo de los itinerarios que van de a a b
-        println(itinerarios(vuelos, aeropuertos)(a, b)
-          .map(x => {
-            println(s"Tiempo de vuelo: ${obtenerTiempoVuelo(aeropuertos, x)}")
-            println(s"Tiempo de espera: ${obtenerTiempoEspera(aeropuertos, x, 0)}")
-            obtenerTiempoEspera(aeropuertos, x, 0) + obtenerTiempoVuelo(aeropuertos, x)
-          }))
-
-
-          // Itinerario vacio
-          List()
-
+        List()
       }
   }
 }
