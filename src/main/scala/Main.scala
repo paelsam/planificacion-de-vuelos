@@ -58,6 +58,7 @@ import Datos._
   // Imprimir vals
 
   println("Prueba itinerariosTiempo")
+  println("\n")
   println(itst1)
   println("\n")
   println(itst2)
@@ -95,19 +96,18 @@ import Datos._
   println(itsa5)
   println("\n")
 
-  // // Prueba itinerarioSalida
-  // val itSalidaCurso = itinerarioSalida(vuelosCurso, aeropuertosCurso)
+  println("Prueba itinerarioSalida")
+  val itSalidaCurso = itinerarioSalida(vuelosCurso, aeropuertosCurso)
 
-  // val itsal1 = itSalidaCurso("CTG", "PTY", 11, 40)
-  // val itsal2 = itSalidaCurso("CTG", "PTY", 11, 55)
-  // val itsal3 = itSalidaCurso("CTG", "PTY", 10, 30)
+  val itsal1 = itSalidaCurso("CTG", "PTY", 11, 40)
+  val itsal2 = itSalidaCurso("CTG", "PTY", 11, 55)
+  val itsal3 = itSalidaCurso("CTG", "PTY", 10, 30)
 
-
-  // println(itsal1)
-  // println("\n")
-  // println(itsal2)
-  // println("\n")
-  // println(itsal3)
-  // println("\n")
+  println(itsal1)
+  println("\n")
+  println(itsal2)
+  println("\n")
+  println(itsal3)
+  println("\n")
 
 }

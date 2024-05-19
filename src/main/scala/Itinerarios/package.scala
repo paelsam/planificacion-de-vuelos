@@ -2,7 +2,6 @@ import Datos.Vuelo
 import Datos.Aeropuerto
 import Datos.Itinerario
 
-
 package object Itinerarios {
 
   // Convertir horas a GMT
@@ -178,9 +177,29 @@ package object Itinerarios {
     // y devuelve una función que recibe c1 y c2, códigos de aeropuerto, y h:m una hora de la cita en c2
     // y devuelve el itinerario que optimiza la hora de salida para llegar a tiempo a la cita
 
-    (a: String, b: String, h: Int, m: Int) =>
+    (cod1: String, cod2: String, h: Int, m: Int) =>
       {
-        List()
+
+        val posiblesResultados = for {
+          itinerario <- itinerarios(vuelos, aeropuertos)(cod1, cod2)
+          vuelo <- itinerario
+          if ((vuelo.HL - obtenerGMT(
+            aeropuertos,
+            vuelo.Dst
+          )) * 60 + vuelo.ML <= ((h - obtenerGMT(
+            aeropuertos,
+            vuelo.Dst
+          )) * 60 + m))
+        } yield {
+          itinerario
+        }
+
+        posiblesResultados.minBy {
+          itinerario => 
+            val horaLlegada = math.abs((itinerario.last.HL - obtenerGMT(aeropuertos, itinerario.last.Dst))) * 60 + itinerario.last.ML
+            val diferenciaHoras = math.abs(horaLlegada - ((h - obtenerGMT(aeropuertos, itinerario.last.Dst)) * 60 + m))
+            (diferenciaHoras, obtenerTiempoVuelo(aeropuertos, itinerario) + obtenerTiempoEspera(aeropuertos, itinerario, 0))
+        } 
       }
   }
 }
