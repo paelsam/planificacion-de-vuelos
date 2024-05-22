@@ -1,6 +1,8 @@
 import Datos.Vuelo
 import Datos.Aeropuerto
 import Datos.Itinerario
+import Datos.vuelosA1
+import scala.compiletime.ops.string
 
 package object Itinerarios {
 
@@ -60,18 +62,28 @@ package object Itinerarios {
     // Se deben considerar todos los itinerarios posibles, sin importar
     // Es decir, la ruta más corta, la ruta con menos escalas, la ruta con menos tiempo en el aire, etc.
 
-    (a: String, b: String) => {
-        vuelos
-          .filter(_.Org == a)
-          .flatMap { vuelo =>
-            if (vuelo.Dst == b) List(List(vuelo))
-            else {
-              itinerarios(vuelos, aeropuertos)(vuelo.Dst, b).map(vuelo :: _)
-            }
-          }
+    (a: String, b: String) => { 
+
+      def aeropuetoVisitado( cod: String, vuelosVisitados: Set[Vuelo] ): Boolean = {
+        val cantidad = vuelosVisitados.filter(vuelo => vuelo.Org == cod || vuelo.Dst == cod).size
+        if ( cantidad >= 1) true else false
       }
 
+      def buscarItinerarios(cod1: String, cod2: String, vuelosVisitados: Set[Vuelo]): List[Itinerario] = {
+        // Si la ruta ya se ha visitado, no se busca más
+        if (cod1 == cod2) List(List())
+        else {
+          vuelos.filter(vuelo => vuelo.Org == cod1 && !vuelosVisitados.contains(vuelo) && !aeropuetoVisitado(vuelo.Dst, vuelosVisitados))
+          .flatMap( vuelo => 
+            buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados + vuelo).map(itinerario => vuelo :: itinerario) 
+          )
+        }
+      }
+      buscarItinerarios(a, b, Set())
+    }    
   }
+  
+
 
   def itinerariosTiempo( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
     // Recibe vuelos, una lista de todos los vuelos disponibles y
@@ -125,7 +137,7 @@ package object Itinerarios {
         itinerarios(vuelos, aeropuertos)(a, b)
           .sortWith((a, b) => obtenerTiempoVuelo(aeropuertos, a) < obtenerTiempoVuelo(aeropuertos,b))
           .take(3)
-      }
+    }
   }
 
   def itinerarioSalida( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String, Int, Int) => Itinerario = {

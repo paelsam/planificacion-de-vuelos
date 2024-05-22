@@ -77,41 +77,11 @@
 // val itsal3 = itSalidaCurso("CTG","PTY",10,30)
 
 
-// its1.map(i=>(tiempoDeVueloIt(aeropuertosCurso)(i),tiempoEnAireIt(aeropuertosCurso)(i)))
-// its2.map(i=>(tiempoDeVueloIt(aeropuertosCurso)(i),tiempoEnAireIt(aeropuertosCurso)(i)))
-// its3.map(i=>(tiempoDeVueloIt(aeropuertosCurso)(i),tiempoEnAireIt(aeropuertosCurso)(i)))
-// its4.map(i=>(tiempoDeVueloIt(aeropuertosCurso)(i),tiempoEnAireIt(aeropuertosCurso)(i)))
-// its5.map(i=>(tiempoDeVueloIt(aeropuertosCurso)(i),tiempoEnAireIt(aeropuertosCurso)(i)))
-
-// minutosAhoras(tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(0)))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(1))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(2))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(3))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(4))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(5))
-// minutosAhoras(tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(6)))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(7))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(8))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(9))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(10))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(11))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(12))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(13))
-// minutosAhoras(tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(14)))
-// tiempoDeVuelo(aeropuertosCurso)(vuelosCurso(15))
-
-// tiempoDeVuelo(aeropuertosCurso)(Vuelo("IBERIA", 506, "MAD", 14, 20, "SVO", 23, 0, 0))
-
-// val its15A1 = itinerarios(vuelosA1,aeropuertos)
-// val itsTpo15A1 = itinerariosTiempo(vuelosA1,aeropuertos)
-// val itsEsc15A1 = itinerariosEscalas(vuelosA1,aeropuertos)
-// val itsAir15A1 = itinerariosAire(vuelosA1,aeropuertos)
-// val itsSal15A1 = itinerarioSalida(vuelosA1,aeropuertos)
-// its15A1("HOU","BNA")
-// itsTpo15A1("HOU","BNA")
-// itsEsc15A1("HOU","BNA")
-// itsAir15A1("HOU","BNA")
-// itsSal15A1("HOU","BNA", 18, 30)
+// itinerarios(vuelosA1,aeropuertos)("HOU","BNA")
+// itinerariosTiempo(vuelosA1,aeropuertos)("HOU","BNA")
+// itinerariosEscalas(vuelosA1,aeropuertos)("HOU","BNA")
+// itinerariosAire(vuelosA1,aeropuertos)("HOU","BNA")
+// itinerarioSalida(vuelosA1,aeropuertos)("HOU","BNA", 18, 30)
 
 // val its40B1 = itinerarios(vuelosB1,aeropuertos)
 // val itsTpo40B1 = itinerariosTiempo(vuelosB1,aeropuertos)
@@ -140,17 +110,18 @@
 // val itsEsc200C = itinerariosEscalas(vuelosC1++vuelosC2, aeropuertos)
 // val itsAir200C = itinerariosAire(vuelosC1++vuelosC2, aeropuertos)
 // val itsSal200C = itinerarioSalida(vuelosC1++vuelosC2, aeropuertos)
+
 // its200C("ORD","TPA")
 // itsTpo200C("ORD","TPA")
 // itsEsc200C("ORD","TPA")
 // itsAir200C("ORD","TPA")
 // itsSal200C("ORD","TPA", 18, 30)
 
-// /*
-// val its300C = itinerarios(vuelosC1++vuelosC2++vuelosC3, aeropuertos)
-// its300C("ORD","TPA")
-// val its400C = itinerarios(vuelosC1++vuelosC2++vuelosC3++vuelosC4, aeropuertos)
-// its400C("ORD","TPA")
-// val its500C = itinerarios(vuelosC1++vuelosC2++vuelosC3++vuelosC4++vuelosC5, aeropuertos)
-// its500C("ORD","TPA")
-// */
+/*
+val its300C = itinerarios(vuelosC1++vuelosC2++vuelosC3, aeropuertos)
+its300C("ORD","TPA")
+val its400C = itinerarios(vuelosC1++vuelosC2++vuelosC3++vuelosC4, aeropuertos)
+its400C("ORD","TPA")
+val its500C = itinerarios(vuelosC1++vuelosC2++vuelosC3++vuelosC4++vuelosC5, aeropuertos)
+its500C("ORD","TPA")
+*/
