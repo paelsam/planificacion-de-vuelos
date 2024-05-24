@@ -1,0 +1,123 @@
+\documentclass[letterpaper]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{authblk}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    backgroundcolor=\color{white},
+    basicstyle=\ttfamily\scriptsize, % Ajustar el tamaño de la fuente
+    breaklines=true,
+    breakatwhitespace=true,
+    commentstyle=\color{gray}\itshape,
+    frame=single,
+    keywordstyle=\color{blue}\bfseries,
+    language=Scala,
+    numbers=left,
+    numbersep=10pt,
+    numberstyle=\tiny\color{gray},
+    showspaces=false,
+    showstringspaces=false,
+    stepnumber=1,
+    stringstyle=\color{red},
+}
+
+% Carpeta de imágenes
+\graphicspath{ {./images/} }
+
+\title{
+    Proyecto de curso \\ 
+    \textbf{Problema de planificación de vuelos} \\
+    Fundamentos de programación funcional y concurrente \\
+    \bigskip\includegraphics[scale=0.07]{logo}
+}
+
+
+\author[1]{Elkin Samir Angulo Panameño}
+\author[2]{Miguel Angel Muñoz Piñeros}
+\author[3]{Jose Miguel Fuertes Benavidez}
+\author[4]{Reider Andrés Muñoz Herrera}
+
+% \affil[ ]{ \includegraphics[scale=0.07]{logo} }
+\affil[ ]{Universidad del Valle}
+\affil[ ]{Facultad de Ingeniería}
+\affil[ ]{Escuela de Ingeniería de Sistemas y Computación}
+
+\date{Junio de 2024} 
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+A continuación se presenta un informe sobre el uso de técnicas de programación funcional
+y concurrente en el desarrollo de un proyecto de curso.
+El proyecto consiste en la implementación de un sistema de planificación de vuelos para una aerolínea.
+Para ello se desarrollaron funciones con técinicas de programación funcional, las cuales permiten el agil manejo de los vuelos.
+
+\section{Definición de clases y funciones auxiliares}
+
+Antes de comenzar a explicar las técnicas utilizadas, es importante mencionar unas deficiones de clases y 
+funciones auxiliares que se utilizarán en el desarrollo del proyecto.
+
+\begin{lstlisting}[caption={Definición de la clase Aeropuerto y clase Vuelo}, label={lst:claseAeropuertoclaseVuelo}, captionpos=b]
+case class Aeropuerto(Cod: String, X: Int, Y: Int, GMT: Int)
+case class Vuelo( Aln: String, Num: Int, Org: String, HS: Int, MS: Int, Dst: String, HL: Int, ML: Int, Esc: Int)
+\end{lstlisting}
+
+La clase Aeropuerto tiene los atributos Cod, X, Y y GMT, que representan el código del aeropuerto, la posición en el eje X, 
+la posición en el eje Y y la diferencia horaria con respecto al GMT, respectivamente. 
+Y la clase Vuelo tiene los atributos Aln, Num, Org, HS, MS, Dst, HL, ML y Esc, que representan 
+la aerolínea, el número de vuelo, el aeropuerto de origen, la hora de salida, los minutos de salida, 
+el aeropuerto de destino, la hora de llegada, los minutos de llegada y el número de escalas, respectivamente.
+
+\begin{lstlisting}[caption={Función para obtener el tiempo en GMT}, label={lst:obtenerGMT}, captionpos=b]
+def obtenerGMT(aeropuertos: List[Aeropuerto], aeropuerto: String): Int = {
+    (aeropuertos.find(_.Cod == aeropuerto).get.GMT / 100).toInt
+}
+\end{lstlisting}
+
+La funcion \texttt{obtenerGMT} recibe una lista de aeropuertos y un aeropuerto, y retorna la diferencia horaria con respecto al GMT.
+
+\section{Informe de uso de técnicas de programación funcional y concurrente}
+
+En esta sección se describen las técnicas de programación funcional y concurrente utilizadas en el desarrollo del proyecto.
+Y se argumenta por qué se considera que estas técnicas son adecuadas para el problema de planificación de vuelos. 
+
+\subsection{Uso de técnicas de programación funcional}
+
+
+
+
+\begin{lstlisting}[caption={Función para obtener el tiempo de vuelo}, label={lst:obtenerTiempoVuelo}, captionpos=b]
+def obtenerTiempoVuelo( aeropuertos: List[Aeropuerto], itinerario: Itinerario ): Int = {    
+    itinerario.foldRight(0)((vuelo, acc) => {
+      val (vOrgGMT, vDstGMT) = (obtenerGMT(aeropuertos, vuelo.Org), obtenerGMT(aeropuertos, vuelo.Dst))
+      val HSvGMT = if (vuelo.HS - vOrgGMT < 0) (vuelo.HS - vOrgGMT + 24) else (vuelo.HS - vOrgGMT)
+      val HLvGMT = if (vuelo.HL - vDstGMT < 0) (vuelo.HL - vDstGMT + 24) else (vuelo.HL - vDstGMT)
+      val diferenciaHvGMT = ((HLvGMT * 60 + vuelo.ML) - (HSvGMT * 60 + vuelo.MS))
+      if ( diferenciaHvGMT < 0 ) acc +  diferenciaHvGMT + (24 * 60) else acc + diferenciaHvGMT
+    })
+}
+\end{lstlisting}
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Nullam auctor, nunc nec ultricies ultricies, nunc nunc
+suscipit nunc, nec ultricies nunc nunc nec.
+
+\subsection{Uso de técnicas de paralelización de tareas y datos}
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Nullam auctor, nunc nec ultricies ultricies, nunc nunc
+suscipit nunc, nec ultricies nunc nunc nec.
+
+
+
+
+\end{document}
