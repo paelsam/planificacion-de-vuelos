@@ -85,13 +85,13 @@ import Datos.vuelosC5
   // println(itsSal200C("ORD", "TPA", 18, 30))
   // println("\n")
 
-  val its300C = itinerarios(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)
-  println(its300C("ORD", "TPA"))
+  // val its300C = itinerarios(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)
+  // println(its300C("ORD", "TPA"))
 
-  val its400C =
-    itinerarios(vuelosC1 ++ vuelosC2 ++ vuelosC3 ++ vuelosC4, aeropuertos)
+  // val its400C =
+  //   itinerarios(vuelosC1 ++ vuelosC2 ++ vuelosC3 ++ vuelosC4, aeropuertos)
 
-  println(its400C("ORD", "TPA"))
+  // println(its400C("ORD", "TPA"))
 
   // val its500C = itinerarios(
   //   vuelosC1 ++ vuelosC2 ++ vuelosC3 ++ vuelosC4 ++ vuelosC5,
@@ -99,4 +99,18 @@ import Datos.vuelosC5
   // )
   // println(its500C("ORD", "TPA"))
 
+  // prueba itinerarioSalida
+  // val itSalidaCurso = itinerarioSalida(vuelosCurso, aeropuertosCurso)
+
+  // val itsal1 = itSalidaCurso("CTG", "PTY", 11, 40)
+  // val itsal2 = itSalidaCurso("CTG", "PTY", 11, 55)
+  // val itsal3 = itSalidaCurso("CTG", "PTY", 10, 30)
+
+  // println("\n")
+  // println(itsal1)
+  // println("\n")
+  // println(itsal2)
+  // println("\n")
+  // println(itsal3)
+  // println("\n")
 }

@@ -94,11 +94,10 @@ package object Itinerarios {
     (cod1: String, cod2: String, h: Int, m: Int) => {
         val posiblesResultados = for {
           itinerario <- itinerarios(vuelos, aeropuertos)(cod1, cod2)
-          vuelo <- itinerario
-          if ((vuelo.HL - obtenerGMT(aeropuertos,vuelo.Dst)) * 60 + vuelo.ML <= ((h - obtenerGMT(aeropuertos, vuelo.Dst)) * 60 + m))
+          if ((itinerario.last.HL - obtenerGMT(aeropuertos,itinerario.last.Dst)) * 60 + itinerario.last.ML <= ((h - obtenerGMT(aeropuertos, itinerario.last.Dst)) * 60 + m))
         } yield itinerario
 
-        posiblesResultados.minBy(itinerario => itinerario.maxBy(_.HS).HS)
+        if (!posiblesResultados.isEmpty) posiblesResultados.minBy(itinerario => itinerario.maxBy(_.HS).HS) else List()
       }
   }
 }
