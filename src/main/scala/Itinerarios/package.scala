@@ -22,8 +22,7 @@ package object Itinerarios {
 
   def obtenerTiempoEspera( aeropuertos: List[Aeropuerto], itinerario: Itinerario,acc: Int ): Int = {
     itinerario match {
-      case Nil          => acc
-      case vuelo :: Nil => acc
+      case Nil | _ :: Nil => acc
       case vuelo1 :: vuelo2 :: tail => {
         val (v1DstGMT, v2OrgGMT) = (obtenerGMT(aeropuertos, vuelo1.Dst), obtenerGMT(aeropuertos, vuelo2.Org))
         
@@ -38,18 +37,22 @@ package object Itinerarios {
 
   def itinerarios( vuelos: List[Vuelo],aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
     (a: String, b: String) => { 
+
+      val vuelosPorOrigen = vuelos.groupBy(_.Org)
+
       def aeropuetoVisitado( cod: String, vuelosVisitados: Set[Vuelo] ): Boolean = {
-        vuelosVisitados.filter(vuelo => vuelo.Org == cod || vuelo.Dst == cod).size >= 1
+        vuelosVisitados.exists(vuelo => vuelo.Org == cod || vuelo.Dst == cod)
       }
 
       def buscarItinerarios(cod1: String, cod2: String, vuelosVisitados: Set[Vuelo]): List[Itinerario] = {
         if (cod1 == cod2) List(List())
         else {
-          vuelos.filter(vuelo => vuelo.Org == cod1 && !vuelosVisitados.contains(vuelo) && !aeropuetoVisitado(vuelo.Dst, vuelosVisitados))
+          vuelosPorOrigen.getOrElse(cod1, List())
+          .filter(vuelo => !vuelosVisitados.contains(vuelo) && !aeropuetoVisitado(vuelo.Dst, vuelosVisitados))
           .flatMap( vuelo => 
             buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados + vuelo).map(itinerario => vuelo :: itinerario) 
-          )
-        }
+          )          
+        }  
       }
       buscarItinerarios(a, b, Set())
     }    
@@ -92,10 +95,11 @@ package object Itinerarios {
 
   def itinerarioSalida( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String, Int, Int) => Itinerario = {
     (cod1: String, cod2: String, h: Int, m: Int) => {
-        val posiblesResultados = for {
-          itinerario <- itinerarios(vuelos, aeropuertos)(cod1, cod2)
-          if ((itinerario.last.HL - obtenerGMT(aeropuertos,itinerario.last.Dst)) * 60 + itinerario.last.ML <= ((h - obtenerGMT(aeropuertos, itinerario.last.Dst)) * 60 + m))
-        } yield itinerario
+        val posiblesResultados = itinerarios(vuelos, aeropuertos)(cod1, cod2)
+          .filter(itinerario => {
+            val vDstGMT = obtenerGMT(aeropuertos, itinerario.last.Dst)
+            (itinerario.last.HL - vDstGMT) * 60 + itinerario.last.ML <= ((h - vDstGMT) * 60 + m)
+          })
 
         if (!posiblesResultados.isEmpty) posiblesResultados.minBy(itinerario => itinerario.maxBy(_.HS).HS) else List()
       }
