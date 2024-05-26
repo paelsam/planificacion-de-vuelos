@@ -19,28 +19,40 @@ def main() = {
   // Primero, definir las lista de vuelos por tamaño que se usarán en las pruebas
   val vuelos75 = vuelosA1 ++ vuelosA2 ++ vuelosA3 ++ vuelosA4 ++ vuelosA5 // Hacer pruebas con cada lista de vuelosA
   val vuelos200 = vuelosB1 ++ vuelosB2 ++ vuelosB3 ++ vuelosB4 ++ vuelosB5 // Hacer pruebas con cada lista de vuelosB
+  val vuelos300 = vuelosC1 ++ vuelosC2 ++ vuelosC3 
+  val vuelos400 = vuelosC1 ++ vuelosC2 ++ vuelosC3 ++ vuelosC4
   val vuelos500 = vuelosC1 ++ vuelosC2 ++ vuelosC3 ++ vuelosC4 ++ vuelosC5 // Hacer pruebas con cada lista de vuelosC
   val vuelos1500 = vuelosD1 ++ vuelosD2 ++ vuelosD3 // Hacer pruebas con cada lista de vuelosD
 
   println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos75, aeropuertos)("HOU", "BNA"))
   println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos200, aeropuertos)("DFW", "ORD"))
-  // println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)("HOU", "BNA"))
+  println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos300, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos400, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos500, aeropuertos)("ORD", "TPA"))
 
   println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos75, aeropuertos)("HOU", "BNA"))
   println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos200, aeropuertos)("DFW", "ORD"))
-  // println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)("HOU", "BNA"))
+  println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos300, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos400, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos500, aeropuertos)("ORD", "TPA"))
 
   println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos75, aeropuertos)("HOU", "BNA"))
   println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos200, aeropuertos)("DFW", "ORD"))
-  // println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos300, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos400, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos500, aeropuertos)("ORD", "TPA"))
 
   println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos75, aeropuertos)("HOU", "BNA"))
   println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos200, aeropuertos)("DFW", "ORD"))
-  // println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos300, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos400, aeropuertos)("ORD", "TPA"))
+  println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos500, aeropuertos)("ORD", "TPA"))
 
   println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos75, aeropuertos)("HOU", "BNA", 18, 30))
   println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos200, aeropuertos)("DFW", "ORD", 18, 30))
-  // println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelosC1 ++ vuelosC2 ++ vuelosC3, aeropuertos)("ORD", "TPA", 18, 30))
+  println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos300, aeropuertos)("ORD", "TPA", 18, 30))
+  println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos400, aeropuertos)("ORD", "TPA", 18, 30))
+  println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos500, aeropuertos)("ORD", "TPA", 18, 30))
 
 //   // Ejemplo curso pequeño
 //   val itsCursoPar = itinerariosPar(vuelosCurso, aeropuertosCurso)
