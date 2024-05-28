@@ -35,10 +35,10 @@ package object Itinerarios {
     }
   }
 
-  def itinerarios( vuelos: List[Vuelo],aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
+  def itinerarios( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
     (a: String, b: String) => { 
 
-      val vuelosPorOrigen = vuelos.groupBy(_.Org)
+      val vuelosPorOrigen = vuelos.filter(_.Org == a)
 
       def aeropuetoVisitado( cod: String, vuelosVisitados: Set[Vuelo] ): Boolean = {
         vuelosVisitados.exists(vuelo => vuelo.Org == cod || vuelo.Dst == cod)
@@ -47,11 +47,11 @@ package object Itinerarios {
       def buscarItinerarios(cod1: String, cod2: String, vuelosVisitados: Set[Vuelo]): List[Itinerario] = {
         if (cod1 == cod2) List(List())
         else {
-          vuelosPorOrigen.getOrElse(cod1, List())
-          .filter(vuelo => !vuelosVisitados.contains(vuelo) && !aeropuetoVisitado(vuelo.Dst, vuelosVisitados))
-          .flatMap( vuelo => 
-            buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados + vuelo).map(itinerario => vuelo :: itinerario) 
-          )          
+          vuelosPorOrigen
+            .filter(vuelo => !vuelosVisitados.contains(vuelo) && !aeropuetoVisitado(vuelo.Dst, vuelosVisitados))
+            .flatMap( vuelo => 
+              buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados + vuelo).map(itinerario => vuelo :: itinerario) 
+            )
         }  
       }
       buscarItinerarios(a, b, Set())
