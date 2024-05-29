@@ -59,26 +59,5 @@ def main() = {
     println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos200, aeropuertos)("ORD","TPA"))
     println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos200, aeropuertos)("ORD","TPA"))
     println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos200, aeropuertos)("ORD","TPA", 18, 30))
-
-    println("Prueba con una lista de 260 vuelos")
-    println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos260, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos260, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos260, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos260, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos260, aeropuertos)("ORD","TPA", 18, 30))
-
-    println("Prueba con una lista de 275 vuelos")
-    println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos275, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos275, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos275, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos275, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos275, aeropuertos)("ORD","TPA", 18, 30))
-
-    println("Prueba con una lista de 300 vuelos")
-    println(compararAlgoritmos(itinerarios, itinerariosPar)(vuelos300, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos300, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos300, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos300, aeropuertos)("ORD","TPA"))
-    println(compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos300, aeropuertos)("ORD","TPA", 18, 30))
   }
 }
