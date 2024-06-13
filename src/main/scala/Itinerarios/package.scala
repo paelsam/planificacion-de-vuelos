@@ -3,7 +3,6 @@ import Datos.Aeropuerto
 import Datos.Itinerario
 
 
-
 package object Itinerarios {
 
   def obtenerGMT(aeropuertos: List[Aeropuerto], aeropuerto: String): Int = {
@@ -101,7 +100,10 @@ package object Itinerarios {
             (itinerario.last.HL - vDstGMT) * 60 + itinerario.last.ML <= ((h - vDstGMT) * 60 + m)
           })
 
-        if (!posiblesResultados.isEmpty) posiblesResultados.minBy(itinerario => itinerario.maxBy(_.HS).HS) else List()
+        if (!posiblesResultados.isEmpty) posiblesResultados.maxBy( itinerario => { 
+          itinerario.head.HS * 60 + itinerario.head.MS 
+        }) 
+        else List()
       }
   }
 }

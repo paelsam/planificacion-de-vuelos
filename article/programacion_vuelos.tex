@@ -8,6 +8,9 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{amssymb}
 
 \lstset{
     backgroundcolor=\color{white},
@@ -59,43 +62,171 @@
 A continuación se presenta un informe sobre el uso de técnicas de programación funcional
 y concurrente en el desarrollo de un proyecto de curso.
 El proyecto consiste en la implementación de un sistema de planificación de vuelos para una aerolínea.
-Para ello se desarrollaron funciones con técinicas de programación funcional, las cuales permiten el agil manejo de los vuelos.
+Para ello se desarrollaron funciones con técnicas de programación funcional, las cuales permiten el ágil manejo de los vuelos.
 
-\section{Definición de clases y funciones auxiliares}
+\section{Definición de clases y tipos}
 
-Antes de comenzar a explicar las técnicas utilizadas, es importante mencionar unas deficiones de clases y 
+Antes de comenzar a explicar las técnicas utilizadas, es importante mencionar unas definiciones de clases y
 funciones auxiliares que se utilizarán en el desarrollo del proyecto.
 
-\begin{lstlisting}[caption={Definición de la clase Aeropuerto y clase Vuelo}, label={lst:claseAeropuertoclaseVuelo}, captionpos=b]
+\begin{lstlisting}[caption={Definición de la clase Aeropuerto, la clase Vuelo y el tipo Itinerario}, label={lst:claseAeropuertoclaseVuelo}, captionpos=b]
 case class Aeropuerto(Cod: String, X: Int, Y: Int, GMT: Int)
 case class Vuelo( Aln: String, Num: Int, Org: String, HS: Int, MS: Int, Dst: String, HL: Int, ML: Int, Esc: Int)
+type Itinerario = List[Vuelo]
 \end{lstlisting}
 
-La clase Aeropuerto tiene los atributos Cod, X, Y y GMT, que representan el código del aeropuerto, la posición en el eje X, 
-la posición en el eje Y y la diferencia horaria con respecto al GMT, respectivamente. 
-Y la clase Vuelo tiene los atributos Aln, Num, Org, HS, MS, Dst, HL, ML y Esc, que representan 
-la aerolínea, el número de vuelo, el aeropuerto de origen, la hora de salida, los minutos de salida, 
+La clase \textbf{Aeropuerto} tiene los atributos Cod, X, Y y GMT, que representan el código del aeropuerto, la posición en el eje X,
+la posición en el eje Y y la diferencia horaria con respecto al GMT, respectivamente.
+Y la clase \textbf{Vuelo} tiene los atributos Aln, Num, Org, HS, MS, Dst, HL, ML y Esc, que representan
+la aerolínea, el número de vuelo, el aeropuerto de origen, la hora de salida, los minutos de salida,
 el aeropuerto de destino, la hora de llegada, los minutos de llegada y el número de escalas, respectivamente.
+Y por último, el tipo \textbf{Itinerario} es un tipo de lista de Vuelos.
 
-\begin{lstlisting}[caption={Función para obtener el tiempo en GMT}, label={lst:obtenerGMT}, captionpos=b]
-def obtenerGMT(aeropuertos: List[Aeropuerto], aeropuerto: String): Int = {
-    (aeropuertos.find(_.Cod == aeropuerto).get.GMT / 100).toInt
-}
-\end{lstlisting}
-
-La funcion \texttt{obtenerGMT} recibe una lista de aeropuertos y un aeropuerto, y retorna la diferencia horaria con respecto al GMT.
 
 \section{Informe de uso de técnicas de programación funcional y concurrente}
 
 En esta sección se describen las técnicas de programación funcional y concurrente utilizadas en el desarrollo del proyecto.
-Y se argumenta por qué se considera que estas técnicas son adecuadas para el problema de planificación de vuelos. 
+Y se argumenta por qué se considera que estas técnicas son adecuadas para el problema de planificación de vuelos.
 
 \subsection{Uso de técnicas de programación funcional}
 
+\subsubsection{itinerarios}\label{itinerarios}
+
+\begin{lstlisting}[caption={Función para obtener los itinerarios disponibles entre dos aeropuertos}, label={lst:itinerarios}, captionpos=b]
+  def itinerarios( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
+    (a: String, b: String) => { 
+
+      val vuelosPorOrigen = vuelos.groupBy(_.Org)
+
+      def aeropuetoVisitado( cod: String, vuelosVisitados: Set[Vuelo] ): Boolean = {
+        vuelosVisitados.exists(vuelo => vuelo.Org == cod || vuelo.Dst == cod)
+      }
+
+      def buscarItinerarios(cod1: String, cod2: String, vuelosVisitados: Set[Vuelo]): List[Itinerario] = {
+        if (cod1 == cod2) List(List())
+        else {
+          vuelosPorOrigen.getOrElse(cod1, List())
+            .filter(vuelo => !vuelosVisitados.contains(vuelo) && !aeropuetoVisitado(vuelo.Dst, vuelosVisitados))
+            .flatMap( vuelo => 
+              buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados + vuelo).map(itinerario => vuelo :: itinerario) 
+            )
+        }  
+      }
+      buscarItinerarios(a, b, Set())
+    }    
+  }
+\end{lstlisting}
+
+La función itinerarios, es la función principal y sobre la cual se basan el resto de algoritmos realizados. Esta se encarga de encontrar todos los posibles itinerarios entre dos aeropuertos dados (a y b). Mediante una lista de vuelos y una respectiva lista de aeropuertos.
+
+Lo primero que hace es agrupar los vuelos por su aeropuerto de origen mediante un \textbf{groupBy}, lo que permite acceder rápidamente a todos los vuelos que salen de un aeropuerto específico.
+
+Se define una función auxiliar \textbf{aeropuertoVisitado}, que determina si un aeropuerto ha sido visitado, verificando si alguno de los vuelos visitados hasta ahora tiene el aeropuerto dado como origen o destino. Utiliza \textbf{exists} para realizar esta operación, una función de alto orden.
+
+Acto seguido se emplea una función recursiva \textbf{BuscarItinerarios} que se encarga de la lógica principal del programa, esta primero verifica si el aeropuerto de origen es igual al aeropuerto de destino, lo que sirve como caso base de la recursividad, si es así, retorna una lista vacía, es decir que ya no son necesarios vuelos adicionales.
+
+La lógica recursiva toma en consideración todos los vuelos que salen del aeropuerto \textbf{cod1}. Si no hay vuelos desde ese aeropuerto retorna una lista vacía. Sobre estos vuelos se ejecuta un filtro para excluir los que ya han sido visitados o aquellos que tienen como destino un aeropuerto que ya fue visitado. Finalmente, para cada vuelo que pasa el filtro, se realiza una llamada recursiva a \textbf{buscarItinerarios} con el aeropuerto de destino del vuelo actual. Luego, se añade el vuelo actual al inicio de cada itinerario retornado por la llamada recursiva
+
+Por último se hace invocación a esta función recursiva.
 
 
-\begin{lstlisting}[caption={Función para obtener el tiempo de vuelo}, label={lst:obtenerTiempoVuelo}, captionpos=b]
-def obtenerTiempoVuelo( aeropuertos: List[Aeropuerto], itinerario: Itinerario ): Int = {    
+\subsubsection{itinerariosTiempo}
+
+\begin{lstlisting}[caption={Función para minimizar el tiempo total de viaje}, label={lst:itinerariosTiempo}, captionpos=b]
+  def itinerariosTiempo( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
+    (a: String, b: String) => {
+        def obtenerTiempoTotal(itinerario: Itinerario): Int = {
+          obtenerTiempoVuelo(aeropuertos, itinerario) + obtenerTiempoEspera(aeropuertos,itinerario, 0)
+        }
+
+        itinerarios(vuelos, aeropuertos)(a, b)
+          .sortWith((a, b) => { obtenerTiempoTotal(a) < obtenerTiempoTotal(b) })
+          .take(3)
+      }
+  }
+\end{lstlisting}
+
+La función \textbf{itinerariosTiempo} se encarga de encontrar los itinerarios entre dos aeropuertos dados (a y b) y ordenarlos por el tiempo total de viaje (incluyendo tiempo de vuelo y tiempo de espera), devolviendo los tres mejores itinerarios.
+
+Para conseguir esta tarea, itinerariosTiempo hace uso de la función auxiliar \textbf{obtenerTiempoVuelo} que calcula el tiempo total de un itinerario sumando el tiempo de vuelo y tiempo de espera. Luego utiliza la función itinerarios definida previamente para encontrar todos los itinerarios posibles entre los aeropuertos \textbf{a} y \textbf{b} y finalmente, mediante la función de alto orden \textbf{sortWith} que toma una función de comparación como argumento, ordena los itinerarios en función del tiempo total de viaje y se toman los tres mejores vuelos con \textbf{take}.
+
+\subsubsection{itinerariosEscala}
+\begin{lstlisting}[caption={Función para minimizar el numero de escalas totales}, label={lst:itinerariosEscalas}, captionpos=b]
+  def itinerariosEscalas( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
+    (a: String, b: String) => {
+
+        def calcularEscalasTotales(itinerario: Itinerario): Int = {
+          itinerario.map(_.Esc).sum + (itinerario.length - 1)
+        }
+
+        itinerarios(vuelos, aeropuertos)(a, b)
+          .sortWith((a, b) => calcularEscalasTotales(a) < calcularEscalasTotales(b))
+          .take(3)
+      }
+  }
+
+\end{lstlisting}
+
+La función \textbf{itinerariosEscalas} se encarga de encontrar los itinerarios con menos escalas entre dos aeropuertos dados y devolver los tres mejores itinerarios.
+
+Para realizar este trabajo define la función auxiliar \textbf{calcularEscalasTotales}, esta función toma un itinerario y calcula el número total de escalas, utiliza el método \textbf{map} para transformar cada vuelo en el número de escalas (\textbf{Esc}) y luego suma estos valores, Además, suma el número de vuelos menos uno, ya que cada vuelo adicional implica una escala más
+
+Para llevar a cabo el proceso principal de la función, se invoca a \textbf{itinerarios} para obtener todos los itinerarios posibles entre los aeropuertos \textbf{a} y \textbf{b}. Estos resultados se ordenan utilizando el método \textbf{sortWith} que compara los itinerarios basándose en el número total de escalas calculado por la función auxiliar. Y por último, se toman los tres primeros itinerarios de la lista ordenada mediante \textbf{take}.
+
+\subsubsection{itinerariosAire}
+\begin{lstlisting}[caption={Función para minimizar el tiempo total de vuelo}, label={lst:itinerariosAire}, captionpos=b]
+  def itinerariosAire( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String) => List[Itinerario] = {
+    (a: String, b: String) => {
+        itinerarios(vuelos, aeropuertos)(a, b)
+          .sortWith((a, b) => obtenerTiempoVuelo(aeropuertos, a) < obtenerTiempoVuelo(aeropuertos,b))
+          .take(3)
+    }
+  }
+
+\end{lstlisting}
+
+La función \textbf{itinerariosAire} se encarga de encontrar los itinerarios con el menor tiempo de vuelo entre dos aeropuertos dados y devolver los tres mejores itinerarios.
+
+Para hacerlo emplea la función \textbf{itinerarios} para obtener los itinerarios posibles entre los aeropuertos \textbf{a} y \textbf{b}. Sobre estos resultados, se utiliza el método \textbf{sortWith} para ordenarlos en base al tiempo de vuelo total calculado por la función auxiliar \textbf{obtenerTiempoVuelo}. Finalmente con la lista ya ordenada, se utiliza \textbf{take} para seleccionar los tres primeros itinerarios.
+
+\subsubsection{itinerarioSalida}\label{itinerarioSalida}
+
+\begin{lstlisting}[caption={Función para optimizar la hora de salida}, label={lst:itinerarioSalida}, captionpos=b]
+  def itinerarioSalida( vuelos: List[Vuelo], aeropuertos: List[Aeropuerto] ): (String, String, Int, Int) => Itinerario = {
+    (cod1: String, cod2: String, h: Int, m: Int) => {
+        val posiblesResultados = itinerarios(vuelos, aeropuertos)(cod1, cod2)
+          .filter(itinerario => {
+            val vDstGMT = obtenerGMT(aeropuertos, itinerario.last.Dst)
+            (itinerario.last.HL - vDstGMT) * 60 + itinerario.last.ML <= ((h - vDstGMT) * 60 + m)
+          })
+
+        if (!posiblesResultados.isEmpty) posiblesResultados.minBy(itinerario => itinerario.maxBy(_.HS).HS) else List()
+      }
+  }
+\end{lstlisting}
+
+La función \textbf{itinerarioSalida} encuentra el mejor itinerario para que un vuelo llegue antes de una hora específica a un destino dado
+
+Lo primero que hace es invocar a la función itinerarios con el fin de obtener los itinerarios posibles entre los aeropuertos \textbf{cod1} y \textbf{cod2}, sobre estos, se utiliza el método \textbf{filter} para filtrar los itinerarios que llegan al destino antes de la hora especificada. Para cada itinerario entonces, se calcula la hora de llegada ajustada por la zona horaria GMT del destino y se compara con la hora límite proporcionada.
+
+Estos resultados se guardan en una lista con los posibles resultados, y sobre ellos se selecciona el mejor itinerario utilizando \textbf{minBy}, la cual ordena los itinerarios basándose en la hora de salida del vuelo más tarde. Si no hay itinerarios que hayan cumplido con el filtro y la lista de los posibles resultados resulta vacía, se devuelve una lista sin elementos.
+
+\subsection{Funciones auxiliares}
+\subsubsection{obtenerGMT}
+\begin{lstlisting}[caption={Función para obtener el GMT de un aeropuerto}, label={lst:obtenerGMT}, captionpos=b]
+  def obtenerGMT(aeropuertos: List[Aeropuerto], aeropuerto: String): Int = {
+    (aeropuertos.find(_.Cod == aeropuerto).get.GMT / 100).toInt
+  }
+\end{lstlisting}
+
+\textbf{obtenerGMT} determina el valor GMT (Hora Media de Greenwich) de un aeropuerto dado su código, entre una lista de aeropuertos.
+
+Para determinar el valor, usa la función de alto orden \textbf{find} para buscar en la lista de aeropuertos el aeropuerto cuyo código coincide con el código proporcionado.  El valor retornado por \textbf{find} es extraído mediante \textbf{.get} y del mismo, se toma su GMT con \textbf{.GMT} para ser dividido entre 100 y convertido en entero.
+
+
+\subsubsection{obtenerTiempoVuelo}
+\begin{lstlisting}[caption={Función para el tiempo de vuelo}, label={lst:obtenerTiempoVuelo}, captionpos=b]
+  def obtenerTiempoVuelo( aeropuertos: List[Aeropuerto], itinerario: Itinerario ): Int = {    
     itinerario.foldRight(0)((vuelo, acc) => {
       val (vOrgGMT, vDstGMT) = (obtenerGMT(aeropuertos, vuelo.Org), obtenerGMT(aeropuertos, vuelo.Dst))
       val HSvGMT = if (vuelo.HS - vOrgGMT < 0) (vuelo.HS - vOrgGMT + 24) else (vuelo.HS - vOrgGMT)
@@ -103,22 +234,401 @@ def obtenerTiempoVuelo( aeropuertos: List[Aeropuerto], itinerario: Itinerario ):
       val diferenciaHvGMT = ((HLvGMT * 60 + vuelo.ML) - (HSvGMT * 60 + vuelo.MS))
       if ( diferenciaHvGMT < 0 ) acc +  diferenciaHvGMT + (24 * 60) else acc + diferenciaHvGMT
     })
-}
+  }
+\end{lstlisting}
+\textbf{obtenerTiempoVuelo} calcula el tiempo total de vuelo en minutos para un itinerario dado, teniendo en cuenta las diferencias de hora local y GMT de los aeropuertos de origen y destino
+
+El proceso se encapsula en \textbf{foldRight} una función de alto orden que acumula un valor, en este caso el tiempo total de vuelo, para ello itera sobre la lista desde el final hasta el principio. Toma un valor inicial (0) y una función binaria que combina cada elemento de la lista con el acumulador (\textbf{acc}).
+
+Sobre el \textbf{foldRight} se calcula la diferencia de GMT de los aeropuertos de origen y destino. Después se ajustan las horas de salida (\textbf{HSvGMT}) y llegada (\textbf{HLvGMT}) del vuelo,  teniendo en cuenta la diferencia de GMT. Si la hora ajustada es negativa, se le suman 24 horas para obtener el valor correcto en un formato de 24 horas
+
+Por último se calcula la diferencia de tiempo en minutos entre la hora de llegada y la hora de salida. Si la diferencia es negativa, se le suman 24 horas (en minutos) para obtener la duración correcta.
+
+\subsubsection{obtenerTiempoEspera}
+\begin{lstlisting}[caption={Función para obtener el tiempo de espera}, label={lst:obtenerTiempoEspera}, captionpos=b]
+  def obtenerTiempoEspera( aeropuertos: List[Aeropuerto], itinerario: Itinerario,acc: Int ): Int = {
+    itinerario match {
+      case Nil | _ :: Nil => acc
+      case vuelo1 :: vuelo2 :: tail => {
+        val (v1DstGMT, v2OrgGMT) = (obtenerGMT(aeropuertos, vuelo1.Dst), obtenerGMT(aeropuertos, vuelo2.Org))
+        
+        val HLv1GMT = if (vuelo1.HL - v1DstGMT  < 0) (vuelo1.HL - v1DstGMT + 24) else (vuelo1.HL - v1DstGMT)
+        val HSv2GMT = if (vuelo2.HS - v2OrgGMT < 0) (vuelo2.HS - v2OrgGMT + 24) else (vuelo2.HS - v2OrgGMT)
+
+        val diferenciaHvGMT = (HSv2GMT * 60 + vuelo2.MS) - (HLv1GMT * 60 + vuelo1.ML) 
+        obtenerTiempoEspera( aeropuertos, vuelo2 :: tail, acc + diferenciaHvGMT)
+      }
+    }
+  }
 \end{lstlisting}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Nullam auctor, nunc nec ultricies ultricies, nunc nunc
-suscipit nunc, nec ultricies nunc nunc nec.
+\textbf{obtenerTiempoEspera} calcula el tiempo total de espera entre vuelos en un itinerario dado, ajustando las horas de llegada y salida por la diferencia de GMT de los aeropuertos de origen y destino, respectivamente.
+
+La función utiliza reconocimiento de patrones para manejar los diferentes casos del itinerario.
+
+El primer caso, actúa cuando el itinerario esta vacío o tiene un solo vuelo, en este caso, se devuelve el acumulador. Para el segundo caso, si hay al menos dos vuelos, se descomponen en \textbf{vuelo1}, \textbf{vuelo2} y el resto de la lista.
+
+En el segundo caso, lo primero que se hace es obtener el GMT de los aeropuertos de destino (\textbf{vuelo1.Dst}) y origen (\textbf{vuelo2.Org}), mediante la función \textbf{obtenerGMT}
+
+Después, se ajustan las horas de llegada (\textbf{HLv1GMT}) y salida (\textbf{HSv2GMT}) de los vuelos teniendo en cuenta la diferencia de GMT previamente calculada. Si la hora ajustada es negativa, se le suman 24 horas para obtener el valor correcto en un formato de 24 horas.
+
+Por último se calcula la diferencia de tiempo en minutos entre la hora de salida ajustada por GMT del segundo vuelo y la hora de llegada ajustada por GMT del primer vuelo. Luego se llama recursivamente a \textbf{obtenerTIempoEspera} con el resto del itinerario y el acumulador actualizado.
+
+\subsection{Técnicas de programación funcional utilizadas}
+
+\begin{center}
+  \resizebox{16cm}{!} {
+    \begin{tabular}{|l|c|c|c|c|}
+      \hline
+                          & Recursión & Reconocimiento de patrones & Mecanismos de encapsulación & Funciones de alto orden \\ \hline
+      Itinerarios         & X         &                            & X                           & X                       \\ \hline
+      ItinerariosTiempo   & X         &                            & X                           & X                       \\ \hline
+      ItinerariosEscalas  & X         &                            & X                           & X                       \\ \hline
+      ItinerariosAire     & X         &                            &                             & X                       \\ \hline
+      ItinerariosSalida   & X         &                            &                             & X                       \\ \hline
+      ObtenerGMT          &           &                            &                             & X                       \\ \hline
+      ObtenerTiempoVuelo  &           &                            &                             & X                       \\ \hline
+      ObtenerTiempoEspera & X         & X                          &                             &                         \\ \hline
+    \end{tabular}
+  }
+\end{center}
+
+
+Las técnicas utilizadas para la construcción de los algoritmos fueron compuestas en su totalidad por funciones de alto orden,
+lo que permitió trabajar sobre las colecciones y expresar operaciones complejas de manera concisa y declarativa. La recursión
+en los algoritmos principales estuvo presente solo mediante la función \textbf{itinerarios} y no de manera explícita en otros contextos.
+Aunque los iteradores no fueron un componente visible en los algoritmos, gran parte de las funciones de alto orden aplicadas se basan en esta técnica para su funcionamiento.
 
 \subsection{Uso de técnicas de paralelización de tareas y datos}
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 Nullam auctor, nunc nec ultricies ultricies, nunc nunc
-suscipit nunc, nec ultricies nunc nunc nec. 
+suscipit nunc, nec ultricies nunc nunc nec.
+
+\textbf{Este texto continuará...}
 
 
+\section{Informe de corrección}
+
+A continuación se presenta un informe de corrección de los algoritmos desarrollados en el proyecto.
+
+\subsection{itinerarios}
+
+Sea $f: (v: \text{List}[\text{Vuelo}], a: \text{List}[\text{Aeropuerto}]) \rightarrow g$;
+donde $v$ es una lista de vuelos, $a$ una lista de aeropuertos, y $g: (\text{cod1}: \text{String}, \text{cod2}: \text{String}) \rightarrow \text{List}[\text{Itinerario}]$,
+donde $cod1$ y $cod2$ son códigos de aeropuertos que son atributos de los objetos en $a$.
+
+Y sea \hyperref[itinerarios]{itinerarios} una función de Scala. Vamos a demostrar que:
+
+\begin{center}
+  $\forall v \in \text{List}[\text{Vuelo}], \forall a \in \text{List}[\text{Aeropuerto}], \forall cod1, cod2 \in \{ \text{a} \mid \text{a.Cod}\} \; : \; \text{itinerarios}(v, a) \Longleftrightarrow f(v, a)$.
+\end{center}
+
+Para demostrar $itinerarios$, debemos de demostrar que esta retorna una función
+de como $g$; sin embargo, también debemos de mostrar que $g$ retorna correctamente $\text{List}[\text{Itinerario}]$.
+
+Primero, comenzaremos demostrando la \textbf{función anónima} que está contenida en la función $itinerarios$.
+Esta función anónima, a su vez, contiene otros variables y funciones importantes como lo son:
+
+\begin{itemize}
+  \item \textbf{vuelosPorOrigen}: Esta constante almacena una colección tipo $Map$ en la cual están agrupados todos los vuelos en base al aeropuerto de origen.
+  \item \textbf{aeropuertoVisitado}: Esta función verifica si un aeropuerto ya ha sido visitado ya sea del origen o el destino de un vuelo.
+  \item \textbf{buscarItinerarios}: Esta función recursiva es la más importante ya con ella es la que obtenemos todos los itinerarios posibles de un aeropuerto a otro.
+\end{itemize}
+
+Vamos a demostrar la función \textbf{buscarItinerarios}:
+
+Sea $h : ($cod1 : \text{String}$, \; $cod2 : \text{String}$, \; $vuelosVisitados : \text{Set}[\text{Vuelo}]$) \rightarrow \text{List}[\text{Itinerario}]$, vamos
+a demostrar que:
+
+\begin{center}
+  $\forall cod1, cod2 \in \{ \text{a} \mid \text{a.Cod}\} \; \; \forall vuelosVisitados : \text{Set}[\text{Vuelo}] \; : \; h(cod1, cod2, vuelosVisitados) \Longleftrightarrow buscarItinerarios(cod1, cod2, vuelosVisitados)$
+\end{center}
+
+\addcontentsline{toc}{subsection}{Caso base:}
+\subsubsection*{Caso base:}
+
+Cuando $vuelosVisitados == Set()$. En este caso, tenemos dos subcasos:
+
+\begin{itemize}
+  \item $(cod1 == cod2) \Rightarrow List(List()) \Longleftrightarrow \text{List}[\text{Itinerario}] \Longleftrightarrow h(\text{cod1}, \text{cod2}) $
+  \item $(co1 != cod2) \Rightarrow$
+        $\{ \\
+          vuelosPorOrigen.getOrElse(cod1, \, List())\\
+          .filter(vuelo \Rightarrow \; !Set().contains(vuelo) \; \&\& \; !aeropuetoVisitado(vuelo.Dst, Set()))\\
+          .flatMap(vuelo \Rightarrow buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados + vuelo) \\
+          .map(itinerario \Rightarrow vuelo :: itinerario)) \\
+          \} \Longleftrightarrow h(\text{cod1}, \text{cod2}) $
+\end{itemize}
 
 
+\addcontentsline{toc}{subsection}{Caso inductivo:}
+\subsubsection*{Caso inductivo:}
+\textbf{Hipótesis inductiva:} Supongamos que la función buscarItinerarios funciona correctamente para cualquier par de aeropuertos $(cod1, cod2)$
+y para cualquier conjunto de vuelos visitados ($vuelosVisitados$). donde el número de vuelos visitados sea igual a $k$ ($Set(v'_1, v_2, \ldots, v'_k)$).\\
+
+Sea $(a, b)$ un par de códigos de aeropuertos, y una lista de vuelos visitados ($vuelosVisitados'$) de $k + 1$ vuelos ($vuelosVisitados' = vuelosVisitados + v$), entonces:
+
+\begin{enumerate}
+  \item[] $buscarItinerarios(a, b, Set(v'_1, v_2, \ldots, v'_k))$
+  \item[]
+        $\twoheadrightarrow if\,(a == b)\, List(List()) \; $\\
+        $
+          else \; \{ \\
+          vuelosPorOrigen.getOrElse(a, \, List())\\
+          .filter(vuelo \Rightarrow \; !Set(v'_1, v_2, \ldots, v'_k).contains(vuelo) \; \&\& \; !aeropuetoVisitado(vuelo.Dst,  Set(v'_1, v_2, \ldots, v'_k)))\\
+          .flatMap(vuelo \Rightarrow buscarItinerarios(vuelo.Dst, cod2,  Set(v'_1, v_2, \ldots, v'_k) + vuelo) \\
+          .map(itinerario \Rightarrow vuelo :: itinerario)) \\
+          \}
+        $ \\
+
+        Suponiendo que el método $getOrElse$ devuelve una lista vacía, el método $filter$ devolverá una lista vacía. Por lo tanto, el método $flatMap$ también devolverá una lista vacía.
+        Pero si ese no el caso; y según la hipótesis inductiva, la función \textbf{buscarItinerarios} hará una recursion en la
+        cual el tamaño del conjuntos de vuelosVisitados aumente a $k + 1$. Por lo tanto:
+
+  \item[]
+        $\twoheadrightarrow  List(v_1, v_2, ..., v_n)$ \\
+        $
+          .filter(vuelo \Rightarrow \; !Set(v'_1, v_2, \ldots, v'_k).contains(vuelo) \; \&\& \; !aeropuetoVisitado(vuelo.Dst, Set(v'_1, v_2, \ldots, v'_k)))\\
+          .flatMap(vuelo \Rightarrow buscarItinerarios(vuelo.Dst, cod2, Set(v'_1, v_2, \ldots, v'_k) + vuelo)) \\
+          .map(itinerario \Rightarrow vuelo :: itinerario) \\
+        $
+  \item[]
+        $ \twoheadrightarrow  List(v'_1, v'_2, ..., v'_n)$ \\
+        $
+          .flatMap(vuelo \Rightarrow buscarItinerarios(vuelo.Dst, cod2, vuelosVisitados') \\
+          .map(itinerario \Rightarrow vuelo :: itinerario)) \\
+        $
+
+        Por la hipótesis inductiva, el tamaño del conjunto de vuelosVisitados' aumenta a $k + 1$. Por lo tanto:
+
+  \item[]
+        $ \twoheadrightarrow List(I_1, I_2, ..., I_n) == itinerarios(v, a)(cod1, cod2) == g(cod1, cod2)$
+
+\end{enumerate}
+
+Por lo tanto, hemos demostrado que:
+
+\begin{center}
+  $\forall cod1, cod2 \in \{ \text{a} \mid \text{a.Cod}\} \; \; \forall vuelosVisitados : \text{Set}[\text{Vuelo}] \; : \; h(cod1, cod2, vuelosVisitados) \Longleftrightarrow buscarItinerarios(cod1, cod2, vuelosVisitados)$
+\end{center}
+
+Y a su vez, hemos demostrados:
+
+\begin{center}
+  $\forall v \in \text{List}[\text{Vuelo}], \forall a \in \text{List}[\text{Aeropuerto}], \forall cod1, cod2 \in \{ \text{a} \mid \text{a.Cod}\} \; : \; \text{itinerarios}(v, a) \Longleftrightarrow f(v, a)$.
+\end{center}
+
+
+\subsection{itinerarioSalida}
+
+Sea $f: (v: \text{List}[\text{Vuelo}], a: \text{List}[\text{Aeropuerto}]) \rightarrow g$;
+donde $v$ es una lista de vuelos, $a$ una lista de aeropuertos,
+y $g: (\text{cod1}: \text{String}, \text{cod2}: \text{String}, \text{h}: \text{Int}, \text{m}: \text{Int}) \rightarrow \text{Itinerario}$;
+donde $cod1$ y $cod2$ son códigos de aeropuertos que son atributos de los objetos en $a$ y $h$ y $m$ son horas y minutos de salida de un vuelo, respectivamente.
+
+
+Y sea \hyperref[itinerarioSalida]{itinerarioSalida} una función de Scala. Vamos a demostrar que:
+
+\begin{center}
+  $\forall v \in \text{List}[\text{Vuelo}], \forall a \in \text{List}[\text{Aeropuerto}], \forall cod1, cod2 \in \{ \text{a} \mid \text{a.Cod}\} \; : \; \text{itinerarioSalida}(v, a)(cod1, cod2, h, m) \Longleftrightarrow f(v, a)(cod1, cod2, h, m)$.
+\end{center}
+
+Para demostrar $itinerarioSalida$ debemos de demostrar que esta retorna una función
+de como $g$; sin embargo, también debemos de mostrar que $g$ retorna correctamente $\text{Itinerario}$.
+
+Primero, comenzaremos demostrando la \textbf{función anónima}
+que está contenida en la función.
+
+
+\section{Pruebas comparativas entre las funciones secuenciales y paralelas}
+
+A continuación se presentan diferentes pruebas en la cuales
+se comparan las funciones secuenciales y las funciones paralelas realizadas en el proyecto.
+
+\subsection{Definición de tipos}
+
+\begin{lstlisting}[caption={Definición de los tipos de datos}, label={lst:tipos}, captionpos=b]
+  type AlgoritmoItinerario = (List[Vuelo], List[Aeropuerto]) => (String, String) => List[Itinerario]
+  type AlgoritmoItinerarioSalida = (List[Vuelo], List[Aeropuerto]) => (String, String, Int, Int) => Itinerario
+\end{lstlisting}
+
+\textbf{AlgoritmoItinerario} es un tipo de función que toma dos parámetros, una lista de \textbf{Vuelos} y una lista de \textbf{Aeropuertos}, y devuelve una función que toma dos parámetros, un código de aeropuerto y otro 
+código de aeropuerto, y devuelve una lista de \textbf{Itinerarios}.
+\textbf{AlgoritmoItinerarioSalida} es un tipo de función que toma dos parámetros, una lista de \textbf{Vuelos} y una lista de \textbf{Aeropuertos}, y devuelve una función que toma tres parámetros, un código de aeropuerto, otro código de aeropuerto, 
+y dos horas y minutos de salida, y devuelve un \textbf{Itinerario}.
+
+\subsection{compararAlgoritmos}
+\begin{lstlisting}[caption={Función para comparar los algoritmos}, label={lst:compararAlgoritmos}, captionpos=b]
+  def compararAlgoritmos(a1: AlgoritmoItinerario,a2: AlgoritmoItinerario)(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto])(cod1: String, cod2: String): (Double, Double, Double) = {
+    val tiempoA1 = config(
+        KeyValue(Key.exec.minWarmupRuns -> 20),
+        KeyValue(Key.exec.maxWarmupRuns -> 60),
+        KeyValue(Key.verbose -> false)
+    ) withWarmer ( new Warmer.Default ) measure (a1(vuelos, aeropuertos)(cod1, cod2))
+
+    val tiempoA2 = config(
+        KeyValue(Key.exec.minWarmupRuns -> 20),
+        KeyValue(Key.exec.maxWarmupRuns -> 60),
+        KeyValue(Key.verbose -> false)
+    ) withWarmer ( new Warmer.Default ) measure (a2(vuelos, aeropuertos)(cod1, cod2))
+
+    (tiempoA1.value, tiempoA2.value, tiempoA1.value / tiempoA2.value)
+  }
+\end{lstlisting}
+
+\textbf{compararAlgoritmos} se utiliza para comparar el rendimiento de dos algoritmos \textbf{a1} y \textbf{a2}
+que son de tipo \textbf{AlgoritmoItinerario}. 
+
+La función utiliza una configuración de medición de rendimiento para evaluar cuánto tiempo toma ejecutar cada uno de los algoritmos con los vuelos y aeropuertos proporcionados, 
+desde el aeropuerto con código \textbf{cod1} hasta el aeropuerto con código \textbf{cod2}.
+
+\begin{itemize}
+  \item La configuración de la medición se establece con: 
+      \begin{itemize}
+      \item \textbf{Key.exec.minWarmupRuns $\rightarrow$ 20}: Un mínimo de 20 ejecuciones de calentamiento (warmup).
+      \item \textbf{Key.exec.maxWarmupRuns $\rightarrow$ 60}: Un máximo de 60 ejecuciones de calentamiento. 
+      \item  \textbf{Key.verbose $\rightarrow$ false}: No se muestra información detallada durante la medición.
+      \end{itemize}
+  \item Se usa \textbf{Warmer.Default} para gestionar el calentamiento antes de medir el tiempo real de ejecución. 
+\end{itemize}
+
+La variable \textbf{tiempoA1} mide el tiempo que tarda en ejecutarse el algoritmo \textbf{a1} con los parámetros dados y la variable \textbf{tiempoA2} mide el tiempo que tarde en ejecutarse el algoritmo \textbf{a2} con los mismos parámetros.
+
+
+La función devuelve una tupla \textbf{(Double, Double, Double)} que contiene:
+
+\begin{itemize}
+    \item \textbf{tiempoA1.Value}: El tiempo de ejecución del primer algoritmo.
+    \item \textbf{tiempoA2.Value}: El tiempo de ejecución del primer algoritmo.
+    \item \textbf{tiempoA1.Value}: La relación entre los tiempos de ejecución de ambos algoritmos, indicando cuantas veces mas rápido o mas lento es \textbf{a1} en comparación con \textbf{a2}.
+\end{itemize}
+
+
+\subsection{compararAlgoritmosSalida}
+
+\begin{lstlisting}[caption={Función para comparar los algoritmos}, label={lst:compararAlgoritmosSalida}, captionpos=b]
+  def compararAlgoritmosSalida(a1: AlgoritmoItinerarioSalida, a2: AlgoritmoItinerarioSalida)
+      (vuelos: List[Vuelo], aeropuertos: List[Aeropuerto])(cod1: String, cod2: String, h: Int, m: Int): (Double, Double, Double) = {
+      val tiempoA1 = config(
+          KeyValue(Key.exec.minWarmupRuns -> 20),
+          KeyValue(Key.exec.maxWarmupRuns -> 60),
+          KeyValue(Key.verbose -> false)
+      ) withWarmer ( new Warmer.Default ) measure (a1(vuelos, aeropuertos)(cod1, cod2, h, m))
+      val tiempoA2 = config(
+          KeyValue(Key.exec.minWarmupRuns -> 20),
+          KeyValue(Key.exec.maxWarmupRuns -> 60),
+          KeyValue(Key.verbose -> false)
+      ) withWarmer ( new Warmer.Default ) measure (a2(vuelos, aeropuertos)(cod1, cod2, h, m))
+      (tiempoA1.value, tiempoA2.value, tiempoA1.value / tiempoA2.value)
+  }
+\end{lstlisting}
+
+
+\textbf{compararAlgoritmosSalida} se utiliza para comparar comparar el rendimiento de dos algoritmos \textbf{a1} y \textbf{a2} que reciben una lista de \textbf{vuelos}  y una lista de \textbf{aeropuertos}  como parámetro, junto con dos códigos de aeropuertos \textbf{cod1} y \textbf{cod2} tipo String, y una hora y minuto \textbf{h} \textbf{m} como parametro tipo Int
+
+La función utiliza una configuración de medición de rendimiento para evaluar cuánto tiempo toma ejecutar cada uno de los algoritmos con los vuelos y aeropuertos y hora de salida proporcionados.
+
+La configuración de la medición es la misma que la utilizada en la función \textbf{compararAlgoritmos}.
+
+La variable \textbf{tiempoA1} mide el tiempo que tarda en ejecutarse el algoritmo \textbf{a1} con los parámetros dados (vuelos, aeropuertos, códigos de aeropuertos, hora y minuto de salida) y la variable \textbf{tiempoA2} mide el tiempo que tarde en ejecutarse el algoritmo \textbf{a2} con los mismos parámetros.
+
+
+La función devuelve una tupla \textbf{(Double, Double, Double)} que contiene:
+
+\begin{itemize}
+    \item \textbf{tiempoA1.Value}: El tiempo de ejecución del primer algoritmo.
+    \item \textbf{tiempoA2.Value}: El tiempo de ejecución del primer algoritmo.
+    \item \textbf{tiempoA1.Value}: La relación entre los tiempos de ejecución de ambos algoritmos, indicando cuantas veces mas rápido o mas lento es \textbf{a1} en comparación con \textbf{a2}.
+\end{itemize}
+
+
+\subsection{Algoritmo de pruebas}
+
+\subsubsection{Definición de las Listas de Vuelos}
+
+\begin{lstlisting}[caption={Definición de las Listas de Vuelos}, label={lst:vuelos}, captionpos=listaVuelos]
+  val vuelos60 = vuelosA1 ++ vuelosA2 ++ vuelosA3 ++ vuelosA4
+  val vuelos100 = vuelosB1 ++ vuelos60
+  val vuelos160 = vuelosC1 ++ vuelos60
+  val vuelos200 = vuelosC1 ++ vuelosC2
+  val vuelos260 = vuelos200 ++ vuelos60
+  val vuelos275 = vuelos260 ++ vuelosA1
+  val vuelos300 = vuelosC1 ++ vuelosC2 ++ vuelosC3
+\end{lstlisting}
+
+Se crean varias listas de vuelos concatenando listas preexistentes:
+
+\begin{itemize}
+    \item \textbf{vuelos60}: Combina las listas \textbf{vuelosA1, vuelosA2, vuelosA3 y vuelosA4}.
+    \item \textbf{vuelos100}: Combina  \textbf{vuelosB1 y vuelos60}.
+    \item \textbf{vuelos160}: Combina  \textbf{vuelosC1 y vuelos60}.
+    \item \textbf{vuelos200}: Combina  \textbf{vuelosC1 y vuelosC2}.
+\end{itemize}
+
+\subsubsection{Ciclo for para realizar las pruebas}
+
+\begin{lstlisting}[caption={Ciclo for para realizar las pruebas}, label={lst:ciclo}, captionpos=cicloFor]
+  for (i <- 1 to 3) {
+    ...
+  }
+\end{lstlisting}
+
+El ciclo se ejecuta 3 veces y cada interacción se realizan pruebas de rendimiento 
+con listas de vuelos de diferentes longitudes (vuelos60, vuelos100, vuelos160 y vuelos200). 
+En cada iteración, se realizan las siguientes acciones:
+
+\begin{enumerate}
+  \item \textbf{Impresión de la Iteración Actual:}.
+  \begin{lstlisting}[caption={}, label={lst:contadorItraciones}, captionpos=b]
+  println(s"Iteracion #$i:")
+  \end{lstlisting}
+
+  \item \textbf{Pruebas con Lista de 60 Vuelos:}
+  Se llama a la función \textbf{compararAlgoritmos}  y \textbf{compararAlgoritmosSalida}  con la lista \textbf{vuelos60} y los aeropuertos (``HOU'', ``BNA'').
+  \begin{lstlisting}[caption={}, label={lst:lista60}, captionpos=b]
+  println("Prueba con una lista de 60 vuelos")
+  compararAlgoritmos(itinerarios, itinerariosPar)(vuelos60, aeropuertos)("HOU","BNA")
+  compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos60, aeropuertos)("HOU","BNA")
+  compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos60, aeropuertos)("HOU","BNA")
+  compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos60, aeropuertos)("HOU","BNA")
+  compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos60, aeropuertos)("HOU","BNA", 18, 30)
+  \end{lstlisting}
+  \item \textbf{Pruebas con Lista de 100 Vuelos:}
+  Se llama a las mismas funciones con la lista \textbf{vuelos100} y los aeropuertos (``DFW'', ``ORD'')
+  \begin{lstlisting}[caption={}, label={lst:lista100}, captionpos=b]
+  println("Prueba con una lista de 100 vuelos")
+  compararAlgoritmos(itinerarios, itinerariosPar)(vuelos100, aeropuertos)("DFW","ORD")
+  compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos100, aeropuertos)("DFW","ORD")
+  compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos100, aeropuertos)("DFW","ORD")
+  compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos100, aeropuertos)("DFW","ORD")
+  compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos100, aeropuertos)("DFW","ORD", 18, 30)
+  \end{lstlisting}
+  \item \textbf{Pruebas con Lista de 160 Vuelos:}
+  Se llama a las mismas funciones con la lista \textbf{vuelos160} y los aeropuertos (``ORD'', ``TPA'').
+  \begin{lstlisting}[caption={}, label={lst:lista160}, captionpos=b]
+  println("Prueba con una lista de 160 vuelos")
+  compararAlgoritmos(itinerarios, itinerariosPar)(vuelos160, aeropuertos)("ORD","TPA")
+  compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos160, aeropuertos)("ORD","TPA")
+  compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos160, aeropuertos)("ORD","TPA")
+  compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos160, aeropuertos)("ORD","TPA")
+  compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos160, aeropuertos)("ORD","TPA", 18, 30)
+  \end{lstlisting}
+  \item \textbf{Pruebas con Lista de 200 Vuelos:} Se llama a las mismas funciones con la lista \textbf{vuelos200} y los aeropuertos (``ORD'', ``TPA'').
+  \begin{lstlisting}[caption={}, label={lst:lista200}, captionpos=b]
+  println("Prueba con una lista de 200 vuelos")
+  compararAlgoritmos(itinerarios, itinerariosPar)(vuelos200, aeropuertos)("ORD","TPA")
+  compararAlgoritmos(itinerariosTiempo, itinerariosTiempoPar)(vuelos200, aeropuertos)("ORD","TPA")
+  compararAlgoritmos(itinerariosEscalas, itinerariosEscalasPar)(vuelos200, aeropuertos)("ORD","TPA")
+  compararAlgoritmos(itinerariosAire, itinerariosAirePar)(vuelos200, aeropuertos)("ORD","TPA")
+  compararAlgoritmosSalida(itinerarioSalida, itinerarioSalidaPar)(vuelos200, aeropuertos)("ORD","TPA", 18, 30)
+  \end{lstlisting}
+\end{enumerate}
+
+En cada iteración del ciclo, se comparan los tiempos de ejecución de 
+diferentes algoritmos para diferentes tamaños de listas de vuelos, 
+permitiendo evaluar y comparar el rendimiento de los algoritmos 
+bajo distintas condiciones.
 
 
 

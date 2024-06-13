@@ -114,7 +114,10 @@ package object ItinerariosPar {
       }).par
 
       // Encontrar el itinerario con la hora de salida más temprana en paralelo
-      if (posiblesResultados.nonEmpty) posiblesResultados.minBy(itinerario => itinerario.maxBy(_.HS).HS) else List()
+      if (!posiblesResultados.isEmpty) posiblesResultados.maxBy( itinerario => { 
+          itinerario.head.HS * 60 + itinerario.head.MS 
+        }) 
+      else List()
       
     }
   }

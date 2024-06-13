@@ -8,10 +8,7 @@ package object Benchmark {
     type AlgoritmoItinerario = (List[Vuelo], List[Aeropuerto]) => (String, String) => List[Itinerario]
     type AlgoritmoItinerarioSalida = (List[Vuelo], List[Aeropuerto]) => (String, String, Int, Int) => Itinerario
 
-    def compararAlgoritmos(
-        a1: AlgoritmoItinerario,
-        a2: AlgoritmoItinerario,
-    )(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto])(cod1: String, cod2: String): (Double, Double, Double) = {
+    def compararAlgoritmos(a1: AlgoritmoItinerario,a2: AlgoritmoItinerario)(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto])(cod1: String, cod2: String): (Double, Double, Double) = {
         val tiempoA1 = config(
             KeyValue(Key.exec.minWarmupRuns -> 20),
             KeyValue(Key.exec.maxWarmupRuns -> 60),
@@ -27,10 +24,8 @@ package object Benchmark {
         (tiempoA1.value, tiempoA2.value, tiempoA1.value / tiempoA2.value)
     }
 
-    def compararAlgoritmosSalida(
-        a1: AlgoritmoItinerarioSalida,
-        a2: AlgoritmoItinerarioSalida,
-    )(vuelos: List[Vuelo], aeropuertos: List[Aeropuerto])(cod1: String, cod2: String, h: Int, m: Int): (Double, Double, Double) = {
+    def compararAlgoritmosSalida(a1: AlgoritmoItinerarioSalida, a2: AlgoritmoItinerarioSalida)
+        (vuelos: List[Vuelo], aeropuertos: List[Aeropuerto])(cod1: String, cod2: String, h: Int, m: Int): (Double, Double, Double) = {
         val tiempoA1 = config(
             KeyValue(Key.exec.minWarmupRuns -> 20),
             KeyValue(Key.exec.maxWarmupRuns -> 60),
