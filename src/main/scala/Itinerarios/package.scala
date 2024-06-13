@@ -96,8 +96,7 @@ package object Itinerarios {
     (cod1: String, cod2: String, h: Int, m: Int) => {
         val posiblesResultados = itinerarios(vuelos, aeropuertos)(cod1, cod2)
           .filter(itinerario => {
-            val vDstGMT = obtenerGMT(aeropuertos, itinerario.last.Dst)
-            (itinerario.last.HL - vDstGMT) * 60 + itinerario.last.ML <= ((h - vDstGMT) * 60 + m)
+            itinerario.last.HL * 60 + itinerario.last.ML <= h * 60 + m
           })
 
         if (!posiblesResultados.isEmpty) posiblesResultados.maxBy( itinerario => { 

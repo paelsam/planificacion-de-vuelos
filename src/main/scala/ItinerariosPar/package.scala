@@ -109,8 +109,7 @@ package object ItinerariosPar {
       val todosItinerarios = itinerariosPar(vuelos, aeropuertos)(cod1, cod2).par
 
       val posiblesResultados = todosItinerarios.filter(itinerario => {
-          val vDstGMT = obtenerGMT(aeropuertos, itinerario.last.Dst)
-          (itinerario.last.HL - vDstGMT) * 60 + itinerario.last.ML <= ((h - vDstGMT) * 60 + m)
+        itinerario.last.HL * 60 + itinerario.last.ML <= h * 60 + m
       }).par
 
       // Encontrar el itinerario con la hora de salida más temprana en paralelo
